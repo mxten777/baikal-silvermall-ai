@@ -1,8 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import MypageNav from './MypageNav'
 
-export default async function MypageLayout({
+export default async function CheckoutLayout({
   children,
 }: {
   children: React.ReactNode
@@ -12,7 +11,7 @@ export default async function MypageLayout({
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) redirect('/login?next=/mypage')
+  if (!user) redirect('/login?next=/checkout')
 
-  return <MypageNav>{children}</MypageNav>
+  return <>{children}</>
 }
