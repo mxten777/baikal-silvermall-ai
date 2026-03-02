@@ -16,6 +16,28 @@ const CATEGORY_ICONS: Record<string, string> = {
   '호흡기·흡인기': '💨',
 }
 
+// ─── 데모용 목업 데이터 (DB 없을 때 폴백) ──────────────────────────────────
+const MOCK_CATEGORIES = [
+  { id: '1', name: '이동편의용품', slug: 'mobility' },
+  { id: '2', name: '욕창예방용품', slug: 'pressure-care' },
+  { id: '3', name: '세면·목욕용품', slug: 'bath' },
+  { id: '4', name: '배변처리용품', slug: 'toilet' },
+  { id: '5', name: '감각·인지기능', slug: 'cognitive' },
+  { id: '6', name: '치매·인지증', slug: 'dementia' },
+  { id: '7', name: '호흡기·흡인기', slug: 'respiratory' },
+]
+
+const MOCK_PRODUCTS = [
+  { id: 'demo-1', name: '전동 휠체어 (경량형)', price: 1200000, sale_price: 980000, image_url: null, category: { name: '이동편의용품' }, slug: 'demo-electric-wheelchair', sold_count: 320, status: 'active' },
+  { id: 'demo-2', name: '에어매트리스 (욕창예방)', price: 350000, sale_price: 290000, image_url: null, category: { name: '욕창예방용품' }, slug: 'demo-air-mattress', sold_count: 210, status: 'active' },
+  { id: 'demo-3', name: '샤워 의자 (접이식)', price: 85000, sale_price: null, image_url: null, category: { name: '세면·목욕용품' }, slug: 'demo-shower-chair', sold_count: 185, status: 'active' },
+  { id: 'demo-4', name: '이동식 좌변기', price: 120000, sale_price: 99000, image_url: null, category: { name: '배변처리용품' }, slug: 'demo-commode', sold_count: 163, status: 'active' },
+  { id: 'demo-5', name: '보행 보조기 (4발 지팡이)', price: 65000, sale_price: null, image_url: null, category: { name: '이동편의용품' }, slug: 'demo-walker', sold_count: 142, status: 'active' },
+  { id: 'demo-6', name: '치매 배회 감지기', price: 280000, sale_price: 240000, image_url: null, category: { name: '치매·인지증' }, slug: 'demo-wandering-sensor', sold_count: 98, status: 'active' },
+  { id: 'demo-7', name: '자동 흡인기 (가정용)', price: 450000, sale_price: null, image_url: null, category: { name: '호흡기·흡인기' }, slug: 'demo-suction', sold_count: 87, status: 'active' },
+  { id: 'demo-8', name: '수동 휠체어 (표준형)', price: 380000, sale_price: 320000, image_url: null, category: { name: '이동편의용품' }, slug: 'demo-wheelchair', sold_count: 75, status: 'active' },
+]
+
 // ─── 서버 컴포넌트 ──────────────────────────────────────────────────────────
 export const revalidate = 3600 // 1시간마다 ISR
 
@@ -24,7 +46,7 @@ export default async function HomePage() {
   const db = supabase as any // DB 타입 생성 전 임시 캐스팅
 
   // 카테고리 + 인기상품 병렬 fetch
-  const [{ data: categories }, { data: popularProducts }, { data: newProducts }] =
+  const [{ data: categoriesRaw }, { data: popularRaw }, { data: newRaw }] =
     await Promise.all([
       db
         .from('categories')
@@ -44,6 +66,11 @@ export default async function HomePage() {
         .order('created_at', { ascending: false })
         .limit(4),
     ])
+
+  // DB 연결 안 되면 목업 데이터 사용
+  const categories = (categoriesRaw && categoriesRaw.length > 0) ? categoriesRaw : MOCK_CATEGORIES
+  const popularProducts = (popularRaw && popularRaw.length > 0) ? popularRaw : MOCK_PRODUCTS
+  const newProducts = (newRaw && newRaw.length > 0) ? newRaw : MOCK_PRODUCTS.slice(0, 4)
 
   return (
     <div className="pb-4">
